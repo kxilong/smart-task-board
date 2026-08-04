@@ -1,0 +1,64 @@
+name: CI · 智能任务板（阶段一）
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm install
+      - run: npx prisma generate
+      - run: npm run build
+      - run: npm test            # 单元测试（不依赖数据库）
+      # 端到端可选：需要可用的 Postgres
+      # - run: npx prisma migrate deploy && npm run test:e2e
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm install
+      - run: npm run lint
+      - run: npm test            # 组件测试 + 工具测试
+      - run: npm run build
+
+  # 部署说明：
+  # 阶段一推荐用平台 Git 集成实现「推送即上线」：
+  #   - 后端：在 Railway 新建 Project，连本仓库、指定 backend/ 为 Root，添加 Postgres 插件，
+  #     把 JWT_* 与 DATABASE_URL 设为环境变量（来自插件）。
+  #   - 前端：在 Vercel 导入 web/ 目录，NEXT_PUBLIC_API_URL 填 Railway 后端域名。
+  # 如需在 Actions 里显式部署，可放开下方 job（需配置 RAILWAY_TOKEN 与 VERCEL_TOKEN 密钥）。
+  deploy:
+    if: false # 默认关闭；配置好密钥后改为 true
+    needs: [backend, web]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy backend to Railway
+        uses: bervProject/railway-deploy@v1.0.0
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Deploy web to Vercel
+        run: npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }} --yes
+        working-directory: web
