@@ -2,6 +2,8 @@
 
 > 前端 → 全栈 Agent 工程师转型计划 · **阶段一：全栈奠基（任务板 1.0：能登录、能上线）**
 > 一个应用从头长到尾：1.0 能登录上线 → 2.0 OAuth+实时 → 3.0 RAG+Agent。本仓库目前演进到阶段一。
+>
+> 📋 完整转型路线图见 [`docs/转型计划.html`](docs/转型计划.html)（4 阶段 8 个项目，本仓库按单应用「智能任务板」一路生长）。
 
 ## 目录结构
 
@@ -21,6 +23,7 @@ smart-task-board/
 │  ├─ components/           # 任务表单、列表、鉴权表单
 │  └─ lib/                  # API 层、鉴权 Context、React Query、校验 schema
 ├─ docker-compose.yml       # 本地：Postgres + 后端
+├─ docs/转型计划.html        # 转型总路线图（阶段一~阶段四 / 项目1~项目8）
 └─ .github/workflows/ci.yml # CI：构建 + 测试；部署说明见内注释
 ```
 

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前端 → 全栈 Agent 工程师 转型计划（持续生长版）</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; background:#f5f6f8; color:#1f2937; margin:0; padding:32px 16px; line-height:1.6; }
+  .wrap { max-width:980px; margin:0 auto; background:#fff; border-radius:16px; padding:40px 44px; box-shadow:0 2px 14px rgba(0,0,0,.06); }
+  h1 { font-size:25px; margin:0 0 6px; color:#111827; }
+  .sub { color:#6b7280; font-size:14px; margin-bottom:8px; }
+  h2 { font-size:19px; margin:32px 0 12px; padding-left:11px; border-left:4px solid #378ADD; color:#0c447c; }
+  .phase { background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px; padding:16px 20px; margin:14px 0; }
+  .phase h3 { margin:0 0 4px; font-size:16px; }
+  .ph1 h3 { color:#185FA5; } .ph2 h3 { color:#3C3489; } .ph3 h3 { color:#854F0B; } .ph4 h3 { color:#0F6E56; }
+  .proj { background:#fff; border:1px solid #e5e7eb; border-left:4px solid #378ADD; border-radius:10px; padding:14px 16px; margin:14px 0; }
+  .proj .name { font-size:17px; font-weight:600; color:#111827; margin-bottom:4px; }
+  .proj .when { font-size:12px; color:#6b7280; margin-bottom:8px; }
+  .fit { display:inline-block; background:#EEEDFE; color:#3C3489; border-radius:6px; padding:2px 8px; font-size:12px; margin:2px 6px 6px 0; }
+  .tag { display:inline-block; background:#E6F1FB; color:#185FA5; border-radius:6px; padding:2px 8px; font-size:12px; margin:2px 6px 2px 0; }
+  .tag.py { background:#EEEDFE; color:#534AB7; } .tag.agent { background:#FAEEDA; color:#854F0B; } .tag.dep { background:#E1F5EE; color:#0F6E56; } .tag.rt { background:#FDE8E8; color:#B42318; }
+  .blk { margin:8px 0; font-size:14px; }
+  .blk b { color:#374151; }
+  ul { margin:4px 0; padding-left:20px; font-size:14px; }
+  li { margin:3px 0; }
+  .ok { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:8px 12px; font-size:13px; color:#166534; margin-top:8px; }
+  .resume { background:#EEEDFE; border-radius:10px; padding:10px 14px; font-size:13px; color:#3C3489; margin-top:8px; }
+  .stack { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
+  .chip { background:#eef2f7; border-radius:20px; padding:4px 12px; font-size:13px; color:#374151; }
+  .warn { background:#fef2f2; border-left:4px solid #e24b4a; border-radius:8px; padding:10px 14px; font-size:13px; color:#7f1d1d; margin:10px 0; }
+  .info { background:#eff6ff; border-left:4px solid #378ADD; border-radius:8px; padding:10px 14px; font-size:13px; color:#0c447c; margin:10px 0; }
+  .ms { background:#f0fdf4; border:1px dashed #86c98c; border-radius:10px; padding:12px 16px; margin:12px 0; font-size:14px; }
+  .ms b { color:#27632a; }
+  .footer { color:#9ca3af; font-size:12px; margin-top:30px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>前端 → 全栈 Agent 工程师 转型计划（持续生长版）</h1>
+  <div class="sub">适用对象：前端开发工程师（已掌握 TypeScript / JavaScript + 前端框架）</div>
+  <div class="sub">主线：一个持续生长的应用「智能任务板」——从裸后端一路长到带 AI 助手；时间按能力推进，不卡死周数</div>
+
+  <div class="warn">
+    <b>核心策略：</b>不堆独立 demo，而是让<b>一个应用从头长到尾</b>——任务板 1.0（能登录上线）→ 2.0（OAuth + 实时）→ 3.0（RAG + Agent 助手）。技术栈（Nest / Postgres / Docker / Python / LangGraph / MCP）藏在背后顺手练。你的前端底子 + TS 是「全栈 Agent」的稀缺拼图。部署单列项目（你不会，专门练）。
+  </div>
+
+  <div class="info">
+    <b>贯穿全程的两条线（之前缺的，这次补上）：</b><br>
+    ① <b>测试线</b>：从项目 3 起，每个项目带测试（Nest 单测 / 前端组件测 / Agent pytest 评测），验收不只靠手点。<br>
+    ② <b>求职线</b>：项目 8 专门收尾——系统设计、简历、GitHub 包装、模拟面试，把前面全串起来「卖出去」。
+  </div>
+
+  <h2>工具栈</h2>
+  <div class="stack">
+    <span class="chip">TypeScript</span><span class="chip">Next.js / React</span><span class="chip">React Query</span>
+    <span class="chip">Node（Nest）</span><span class="chip">Python（FastAPI）</span>
+    <span class="chip">Postgres</span><span class="chip">Docker</span>
+    <span class="chip">Railway / Render / Vercel</span>
+    <span class="chip">WebSocket（实时）</span><span class="chip">MCP</span>
+    <span class="chip">LangGraph</span><span class="chip">OpenAI / Claude / DeepSeek API</span>
+    <span class="chip">LangSmith</span><span class="chip">Jest / pytest</span>
+  </div>
+
+  <h2>阶段一 · 全栈奠基（任务板 1.0：能登录、能上线）</h2>
+  <div class="phase ph1">
+    <h3>目标：做出一个能登录、能上线的小全栈应用，并把测试习惯立起来</h3>
+
+    <div class="proj">
+      <div class="name">项目 1 · 做一个带登录的「任务板」后端</div>
+      <div class="when">阶段一</div>
+      <span class="fit">练：NestJS + Postgres + JWT（含刷新令牌）+ 数据库建模</span>
+      <div class="stack"><span class="tag">NestJS</span><span class="tag">TypeScript</span><span class="tag">Postgres</span><span class="tag">JWT</span></div>
+      <div class="blk"><b>做出来什么：</b>一个后端服务，用户能注册 / 登录（access + refresh 双令牌），对自己的一组任务做增删改查。最朴素的「任务板」API。</div>
+      <ul>
+        <li>设计 REST 接口、用 Prisma 建「用户表 / 任务表」并关联、密码加密、JWT 登录（双令牌）、统一报错、写基础单测</li>
+      </ul>
+      <div class="ok"><b>验收：</b>注册 → 登录拿 token → 增删改查自己的任务；用别人 token 改不了我的；刷新令牌能换新 access；单测跑绿。</div>
+      <div class="resume">简历卖点：REST API + 数据库建模 + 鉴权（含刷新令牌）+ 单测</div>
+    </div>
+
+    <div class="proj">
+      <div class="name">项目 2 · 给「任务板」做一个网页前端</div>
+      <div class="when">阶段一</div>
+      <span class="fit">练：Next.js + 调 API + 登录态 + 数据请求库 + 表单校验 + 测试</span>
+      <div class="stack"><span class="tag">Next.js</span><span class="tag">React</span><span class="tag">React Query</span><span class="tag dep">部署</span></div>
+      <div class="blk"><b>做出来什么：</b>一个网页版任务板——列表 / 新建 / 编辑 / 删除，调用项目 1 的 API；用 React Query 管请求缓存与登录态，表单校验 + 加载/错误态齐全，部署到 Vercel。</div>
+      <ul>
+        <li>Next.js App Router、对接任务板 API、React Query 数据层、表单校验（zod）、错误/加载 UX、部署 Vercel、前端组件测试</li>
+      </ul>
+      <div class="ok"><b>验收：</b>浏览器登录 / 增删任务正常；刷新数据还在；表单错误有提示；前端组件测跑绿。</div>
+      <div class="resume">简历卖点：端到端全栈交付 + 前端工程化（数据层 / 校验 / 测试）</div>
+    </div>
+
+    <div class="proj">
+      <div class="name">项目 3 · 把「任务板」部署上线</div>
+      <div class="when">阶段一</div>
+      <span class="fit">练：Docker / 容器化 / 云平台部署（你不会，专门练）+ CI</span>
+      <div class="stack"><span class="tag dep">Docker</span><span class="tag dep">Railway / Render</span></div>
+      <div class="blk"><b>做出来什么：</b>把项目 1 的后端 + 数据库打包成容器推到 Railway，前端 Vercel 接通，整个任务板任何人能访问；GitHub 推送即自动部署。</div>
+      <ul>
+        <li>写 Dockerfile 打包服务、docker-compose 把「服务 + 数据库」一起编排、GitHub Actions 自动部署、把前端与后端接口地址接起来</li>
+      </ul>
+      <div class="ok"><b>验收：</b>云上任务板可正常用（前端 Vercel + 后端 Railway），数据重启不丢；你能讲清「代码 → 镜像 → 上线」。</div>
+      <div class="resume">简历卖点：容器化部署 + CI/CD 意识</div>
+    </div>
+  </div>
+
+  <h2>阶段二 · 做厚（任务板 2.0：OAuth + 实时协作）</h2>
+  <div class="phase ph2">
+    <h3>目标：把「重型后端 / 实时」短板补上（你之前聊过 Next 的实时局限，这里正好练）</h3>
+
+    <div class="proj">
+      <div class="name">项目 4 · 给任务板加多人实时协作（WebSocket）</div>
+      <div class="when">阶段二</div>
+      <span class="fit">练：WebSocket 实时同步（补 Next 实时短板）</span>
+      <div class="stack"><span class="tag rt">WebSocket</span><span class="tag">实时</span></div>
+      <div class="blk"><b>做出来什么：</b>多人同时看 / 改同一任务板时，别人的改动通过 WebSocket 实时推送到你这边（沿用项目 1 的 JWT 账号体系，不引入第三方登录）。</div>
+      <ul>
+        <li>Nest Gateway 写 WebSocket 服务、在线状态显示、简单冲突处理、沿用项目 3 部署</li>
+      </ul>
+      <div class="ok"><b>验收：</b>开两个浏览器（两个 JWT 账号），A 改任务 B 立刻看到；断开重连不丢状态。</div>
+      <div class="resume">简历卖点：实时通信（WebSocket）—— 补齐「重型后端 / 实时」能力</div>
+    </div>
+  </div>
+
+  <h2>阶段三 · 加 AI（任务板 3.0：RAG + Agent 助手）</h2>
+  <div class="phase ph3">
+    <h3>目标：在同一个任务板上长出 RAG 问答和会干活的 Agent 助手</h3>
+
+    <div class="proj">
+      <div class="name">项目 5 · 给任务板加「文档问答」（RAG）</div>
+      <div class="when">阶段三</div>
+      <span class="fit">练：Python + 调大模型 API + Prompt + RAG 全链路（落到任务板）</span>
+      <div class="stack"><span class="tag py">Python</span><span class="tag py">LLM API</span><span class="tag py">RAG</span></div>
+      <div class="blk"><b>做出来什么：</b>用户把需求文档 / 资料喂进任务板，AI 能基于这些文档回答「这个需求啥意思」「哪些任务相关」，并标出来源。</div>
+      <ul>
+        <li>Python（有 TS 底子几天上手）、调 OpenAI / DeepSeek API、Prompt 写法、文档切片 → 向量库 → 检索 → 重排，知识存进任务板数据库</li>
+      </ul>
+      <div class="ok"><b>验收：</b>对文档提问得到「标来源、基于文档」的答案；问文档外的事它说不知道，不瞎编。</div>
+      <div class="resume">简历卖点：LLM API + Prompt + 基础 RAG（已落到真实产品）</div>
+    </div>
+
+    <div class="proj">
+      <div class="name">项目 6 · 给任务板加「AI 助手」（LangGraph + Tool Use + MCP）</div>
+      <div class="when">阶段三</div>
+      <span class="fit">练：LangGraph + 让模型调工具 + 记忆 + 用 MCP 把任务板能力暴露给模型</span>
+      <div class="stack"><span class="tag py">LangGraph</span><span class="tag agent">Tool Use</span><span class="tag agent">记忆</span><span class="tag agent">MCP</span></div>
+      <div class="blk"><b>做出来什么：</b>一个助手——你让它「帮我建个周五交的报表任务」「按紧急度排下序」，它会自己调工具完成；把任务板 API 封装成 MCP 工具，LangGraph 让模型决定调哪个、多步完成任务，还记着前面聊过啥。</div>
+      <ul>
+        <li>LangGraph 状态图、MCP server 暴露任务板工具、模型决策调工具、对话记忆管理</li>
+      </ul>
+      <div class="ok"><b>验收：</b>说「建个周五交的报表任务」，它真调 MCP 建了任务；给需「多步 + 查资料」的指令，它能自动调工具完成且记上下文。</div>
+      <div class="resume">简历卖点：LangGraph Agent + MCP + 工具调用（长在真实产品上）</div>
+    </div>
+  </div>
+
+  <h2>阶段四 · 产品化与求职（上线 + 评测 + 包装）</h2>
+  <div class="phase ph4">
+    <h3>目标：把 AI 助手上线评测，并把这一路长成的应用打包成作品集卖出去</h3>
+
+    <div class="proj">
+      <div class="name">项目 7 · AI 助手上线 + 评测 + 可观测</div>
+      <div class="when">阶段四</div>
+      <span class="fit">练：FastAPI（Agent 后端）+ 流式 + LangSmith + pytest 评测 + 部署</span>
+      <div class="stack"><span class="tag">FastAPI</span><span class="tag agent">流式</span><span class="tag agent">Eval</span><span class="tag agent">可观测</span></div>
+      <div class="blk"><b>做出来什么：</b>Agent 后端（FastAPI）接任务板，回答逐字流式蹦出；接 LangSmith 做调用追踪与监控；写 pytest 评测（任务完成率 / 有没有瞎编）；部署上线。</div>
+      <ul>
+        <li>FastAPI 写 Agent、流式输出、LangSmith 追踪、pytest 评测脚本、生产部署、算 token 成本</li>
+      </ul>
+      <div class="ok"><b>验收：</b>多轮对话助手能调工具 / 记上下文 / 流式出现；评测脚本跑出指标；产品 URL 可访问。</div>
+      <div class="resume">简历卖点：生产级 Agent + 评测 + 可观测</div>
+    </div>
+
+    <div class="proj">
+      <div class="name">项目 8 · 求职准备 / 作品集收尾</div>
+      <div class="when">阶段四</div>
+      <span class="fit">练：系统设计 + 简历 + GitHub 包装 + 表达（把前面全卖出去）</span>
+      <div class="stack"><span class="tag">系统设计</span><span class="tag">简历</span><span class="tag">GitHub</span></div>
+      <div class="blk"><b>做出来什么：</b>把这一路长成的「智能任务板」打包成作品集：写清架构与权衡、录 Demo、整理 GitHub（README / 提交记录）、改简历、准备模拟面试。</div>
+      <ul>
+        <li>画系统架构图（含实时 / AI 部分）、准备 3 个能讲清楚的项目故事、系统设计 / 算法刷题、模拟面试</li>
+      </ul>
+      <div class="ok"><b>验收：</b>GitHub 仓库整洁有 README；能 5 分钟讲清「从后端一路长到 AI 助手」；简历有 1 个端到端项目可讲。</div>
+      <div class="resume">简历卖点：完整作品集 + 面试表达 —— 把前面所有能力串起来</div>
+    </div>
+  </div>
+
+  <h2>里程碑（以应用生长节点为准）</h2>
+  <div class="ms">
+    <b>阶段一末：</b>任务板 1.0 上线——前端 Vercel + 后端 Railway 可访问，带测试 <br>
+    <b>阶段二末：</b>任务板 2.0——多人实时协作（WebSocket） <br>
+    <b>阶段三末：</b>任务板 3.0——RAG 文档问答 + LangGraph/MCP 助手 <br>
+    <b>阶段四末：</b>作品集就绪 + 面试表达打磨完成
+  </div>
+
+  <h2>避坑提醒</h2>
+  <div class="warn">
+    <ul>
+      <li><b>一个应用长到尾</b>：别每步都开新仓库，任务板一个 repo 一路演进，作品集故事才连贯。</li>
+      <li><b>测试别拖到最后</b>：从项目 3 起每个项目带测试，养成习惯比补测容易。</li>
+      <li><b>部署从最省事平台起步</b>：Railway / Render 连 GitHub 自动部署；前端 Vercel。先跑通「推送即上线」。</li>
+      <li><b>Agent 一定要带 UI</b>：纯后端 Agent 竞争力弱，你的前端优势正好用在这里（任务板前端就是载体）。</li>
+      <li><b>Python 只学前必需的</b>：重点放 Agent 生态，语法几天就够。</li>
+      <li><b>RAG 是可选插件不是必需</b>：先跑通「规划 → 调工具 → 观察」循环，RAG 按场景再加。</li>
+      <li><b>MCP 是 2026 硬通货</b>：项目 6 把任务板能力暴露成 MCP 工具，面试能讲「模型自己决定调哪个」。</li>
+    </ul>
+  </div>
+
+  <div class="footer">生成于 2026-08-03 · 阿布（WorkBuddy）· 持续生长版</div>
+</div>
+</body>
+</html>
