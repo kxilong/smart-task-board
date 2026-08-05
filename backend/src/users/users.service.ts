@@ -9,7 +9,7 @@ export class UsersService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('用户不存在');
-    return { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt };
+    return { id: user.id, username: user.username, email: user.email, name: user.name, createdAt: user.createdAt };
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {

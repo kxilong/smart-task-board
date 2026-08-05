@@ -5,11 +5,11 @@ import { loginSchema, registerSchema } from '@/lib/schema';
 
 interface Props {
   mode: 'login' | 'register';
-  onSubmit: (values: { email: string; password: string; name?: string }) => Promise<void>;
+  onSubmit: (values: { username: string; password: string; name?: string }) => Promise<void>;
 }
 
 export function AuthForm({ mode, onSubmit }: Props) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [name, setName] = useState('');
@@ -24,8 +24,8 @@ export function AuthForm({ mode, onSubmit }: Props) {
 
     const values =
       mode === 'login'
-        ? loginSchema.safeParse({ email, password })
-        : registerSchema.safeParse({ email, password, confirm, name });
+        ? loginSchema.safeParse({ username, password })
+        : registerSchema.safeParse({ username, password, confirm, name });
     if (!values.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of values.error.issues) {
@@ -39,9 +39,9 @@ export function AuthForm({ mode, onSubmit }: Props) {
     setSubmitting(true);
     try {
       if (mode === 'login') {
-        await onSubmit({ email, password });
+        await onSubmit({ username, password });
       } else {
-        await onSubmit({ email, password, name: name || undefined });
+        await onSubmit({ username, password, name: name || undefined });
       }
     } catch (err) {
       setServerError(err instanceof Error ? err.message : '操作失败，请重试');
@@ -53,15 +53,15 @@ export function AuthForm({ mode, onSubmit }: Props) {
   return (
     <form onSubmit={handleSubmit} className="form" noValidate>
       <label>
-        邮箱
+        用户名
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
         />
       </label>
-      {errors.email && <p className="field-error">{errors.email}</p>}
+      {errors.username && <p className="field-error">{errors.username}</p>}
 
       <label>
         密码

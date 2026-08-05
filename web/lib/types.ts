@@ -2,7 +2,8 @@ export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
 
 export interface User {
   id: string;
-  email: string;
+  username: string;
+  email: string | null;
   name: string | null;
   createdAt: string;
 }

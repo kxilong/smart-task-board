@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 export interface JwtPayload {
   sub: string;
-  email: string;
+  username: string;
 }
 
 @Injectable()
@@ -22,6 +22,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!payload?.sub) {
       throw new UnauthorizedException('无效的访问令牌');
     }
-    return { userId: payload.sub, email: payload.email };
+    return { userId: payload.sub, username: payload.username };
   }
 }

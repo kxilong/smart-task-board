@@ -9,14 +9,20 @@ const passwordRule = z
     '密码需同时包含大小写字母、数字和特殊符号',
   );
 
+const usernameRule = z
+  .string()
+  .min(3, '用户名至少 3 位')
+  .max(20, '用户名最多 20 位')
+  .regex(/^[a-zA-Z0-9_-]+$/, '用户名仅允许字母、数字、下划线、连字符');
+
 export const loginSchema = z.object({
-  email: z.string().email('邮箱格式不正确'),
+  username: usernameRule,
   password: z.string().min(1, '请输入密码'),
 });
 
 export const registerSchema = z
   .object({
-    email: z.string().email('邮箱格式不正确'),
+    username: usernameRule,
     password: passwordRule,
     confirm: z.string(),
     name: z.string().max(50).optional().or(z.literal('')),

@@ -89,13 +89,13 @@ async function tryRefresh(): Promise<boolean> {
 }
 
 export const authApi = {
-  async register(input: { email: string; password: string; name?: string }) {
+  async register(input: { username: string; password: string; name?: string }) {
     return request<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(input),
     });
   },
-  async login(input: { email: string; password: string }) {
+  async login(input: { username: string; password: string }) {
     return request<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(input),

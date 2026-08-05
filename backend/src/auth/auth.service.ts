@@ -24,8 +24,8 @@ export class AuthService {
   ) {}
 
   /** 签发双令牌：access 短期、refresh 长期 */
-  private async issueTokens(userId: string, email: string): Promise<AuthTokens> {
-    const payload: JwtPayload = { sub: userId, email };
+  private async issueTokens(userId: string, username: string): Promise<AuthTokens> {
+    const payload: JwtPayload = { sub: userId, username };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwt.signAsync(payload, {
         secret: this.config.get<string>('JWT_ACCESS_SECRET'),
@@ -41,28 +41,35 @@ export class AuthService {
 
   private toUserDto(user: {
     id: string;
-    email: string;
+    username: string;
+    email: string | null;
     name: string | null;
     createdAt: Date;
   }) {
-    return { id: user.id, email: user.email, name: user.name, createdAt: user.createdAt };
+    return { id: user.id, username: user.username, email: user.email, name: user.name, createdAt: user.createdAt };
   }
 
   async register(dto: RegisterDto) {
-    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    const existing = await this.prisma.user.findUnique({ where: { username: dto.username } });
     if (existing) {
-      throw new ConflictException('该邮箱已注册');
+      throw new ConflictException('该用户名已被占用');
+    }
+    if (dto.email) {
+      const existingEmail = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      if (existingEmail) {
+        throw new ConflictException('该邮箱已注册');
+      }
     }
     const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = await this.prisma.user.create({
-      data: { email: dto.email, passwordHash, name: dto.name },
+      data: { username: dto.username, email: dto.email, passwordHash, name: dto.name },
     });
-    const tokens = await this.issueTokens(user.id, user.email);
+    const tokens = await this.issueTokens(user.id, user.username);
     return { user: this.toUserDto(user), ...tokens };
   }
 
-  async validateUser(email: string, password: string) {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async validateUser(username: string, password: string) {
+    const user = await this.prisma.user.findUnique({ where: { username } });
     if (!user) return null;
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return null;
@@ -70,11 +77,11 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.validateUser(dto.email, dto.password);
+    const user = await this.validateUser(dto.username, dto.password);
     if (!user) {
-      throw new UnauthorizedException('邮箱或密码错误');
+      throw new UnauthorizedException('用户名或密码错误');
     }
-    const tokens = await this.issueTokens(user.id, user.email);
+    const tokens = await this.issueTokens(user.id, user.username);
     return { user: this.toUserDto(user), ...tokens };
   }
 
@@ -88,7 +95,7 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException('用户不存在');
       }
-      return this.issueTokens(user.id, user.email);
+      return this.issueTokens(user.id, user.username);
     } catch (err) {
       if (err instanceof UnauthorizedException) throw err;
       throw new UnauthorizedException('刷新令牌无效或已过期');
