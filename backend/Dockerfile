@@ -1,5 +1,7 @@
 # ---- 构建阶段 ----
-FROM node:22-alpine AS build
+# 用 Debian 系 slim 镜像：Prisma 的 schema/query engine 依赖 libssl，
+# Alpine 上易因 openssl 版本检测失败导致 migrate deploy 崩溃，bookworm-slim 自带可正常加载。
+FROM node:22-bookworm-slim AS build
 WORKDIR /app
 
 # 先装依赖（利用层缓存）
@@ -12,7 +14,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # ---- 运行阶段 ----
-FROM node:22-alpine AS runtime
+FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
