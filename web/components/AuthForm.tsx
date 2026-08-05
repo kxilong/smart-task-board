@@ -73,6 +73,11 @@ export function AuthForm({ mode, onSubmit }: Props) {
         />
       </label>
       {errors.password && <p className="field-error">{errors.password}</p>}
+      {mode === 'register' && (
+        <p style={{ fontSize: 12, color: '#888', marginTop: -6, marginBottom: 8 }}>
+          至少 8 位，需含大小写字母、数字和特殊符号
+        </p>
+      )}
 
       {mode === 'register' && (
         <>

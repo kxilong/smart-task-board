@@ -1,14 +1,23 @@
 import { z } from 'zod';
 
+// 与服务端 RegisterDto 保持一致：≥8 位且含大小写字母、数字、特殊符号
+const passwordRule = z
+  .string()
+  .min(8, '密码至少 8 位')
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$/,
+    '密码需同时包含大小写字母、数字和特殊符号',
+  );
+
 export const loginSchema = z.object({
   email: z.string().email('邮箱格式不正确'),
-  password: z.string().min(6, '密码至少 6 位'),
+  password: z.string().min(1, '请输入密码'),
 });
 
 export const registerSchema = z
   .object({
     email: z.string().email('邮箱格式不正确'),
-    password: z.string().min(6, '密码至少 6 位'),
+    password: passwordRule,
     confirm: z.string(),
     name: z.string().max(50).optional().or(z.literal('')),
   })
