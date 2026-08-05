@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-// 与服务端 RegisterDto 保持一致：≥8 位且含大小写字母、数字、特殊符号
+// 与服务端 RegisterDto 保持一致：≥6 位且含字母和数字
 const passwordRule = z
   .string()
-  .min(8, '密码至少 8 位')
+  .min(6, '密码至少 6 位')
   .regex(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).*$/,
-    '密码需同时包含大小写字母、数字和特殊符号',
+    /^(?=.*[A-Za-z])(?=.*\d).*$/,
+    '密码至少 6 位，且需同时包含字母和数字',
   );
 
 const usernameRule = z

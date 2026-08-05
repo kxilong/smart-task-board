@@ -4,6 +4,11 @@
 FROM node:22-bookworm-slim AS build
 WORKDIR /app
 
+# 原生 bcrypt 需要从源码编译，预装编译工具链
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 make g++ build-essential libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # 先装依赖（利用层缓存）
 COPY package*.json ./
 RUN npm install
