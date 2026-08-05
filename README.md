@@ -68,12 +68,48 @@ cd backend && npm test                 # 单元测试（mock Prisma，无需 DB�
 cd web && npm test                     # 组件测试 + 工具测试
 ```
 
-## 部署（项目3）
+## 部署（项目3 · 真上线）
 
-- **后端 → Railway**：Railway 连本仓库、指定 `backend/` 为 Root、加 Postgres 插件；把 `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` 设为平台环境变量。Railway 的 Git 集成实现「推送即上线」。
-- **前端 → Vercel**：导入 `web/` 目录，环境变量 `NEXT_PUBLIC_API_URL` 填 Railway 后端域名（带 https）。
-- 也可用本仓库 `docker-compose.yml` 在任意支持 Docker 的平台自托管整套服务。
-- CI 见 `.github/workflows/ci.yml`：push 到 main 自动构建并跑测试；显式部署 job 默认关闭，配置 `RAILWAY_TOKEN` / `VERCEL_TOKEN` 后启用。
+> 目标：后端跑在 Railway（含 Postgres），前端跑在 Vercel，两端通过环境变量接通，任何人可访问。
+> 仓库已就绪：后端 `Dockerfile` 在启动时自动 `prisma migrate deploy` 建表；前端在未设 `NEXT_PUBLIC_API_URL` 时走 `/api/backend` 反代，设了则直连后端。
+
+### 后端 → Railway
+
+1. 打开 [railway.app](https://railway.app) → 用 GitHub 登录 → `New Project` → `Deploy from GitHub repo` → 选本仓库。
+2. 在 Project 里 **添加 PostgreSQL 插件**（`Database` → `PostgreSQL`）。插件会自动注入 `DATABASE_URL` 环境变量。
+3. 进入后端服务 → `Settings` → `Source` 把 **Root Directory 设为 `backend`**（让 Railway 只构建 backend）。
+4. 进入后端服务 → `Variables`，补充以下变量（不要提交真实密钥到仓库）：
+
+   | 变量 | 值 | 说明 |
+   |------|----|----|
+   | `DATABASE_URL` | 由 Postgres 插件自动提供 | 无需手填 |
+   | `JWT_ACCESS_SECRET` | 强随机字符串 | `openssl rand -hex 32` 生成 |
+   | `JWT_REFRESH_SECRET` | 强随机字符串（与上面不同） | 同上 |
+   | `JWT_ACCESS_EXPIRES_IN` | `15m` | |
+   | `JWT_REFRESH_EXPIRES_IN` | `7d` | |
+   | `PORT` | 由 Railway 自动注入 | 应用已读 `process.env.PORT` |
+   | `CORS_ORIGIN` | `https://你的前端.vercel.app` | 填 Vercel 分配的域名，逗号可分隔多个 |
+
+5. 部署完成后，Railway 会给出一个后端域名（如 `xxx.up.railway.app`），记下它（下一步前端要用）。
+6. 第一次启动，镜像里的 `prisma migrate deploy` 会自动建表，数据落在 Postgres 插件里，重启不丢。
+
+### 前端 → Vercel
+
+1. 打开 [vercel.com](https://vercel.com) → 用 GitHub 登录 → `Add New` → `Project` → 导入本仓库。
+2. Framework 选 **Next.js**；**Root Directory 设为 `web`**（让 Vercel 只构建 web）。
+3. 进入项目 → `Settings` → `Environment Variables`，添加：
+
+   | 变量 | 值 |
+   |------|----|
+   | `NEXT_PUBLIC_API_URL` | `https://你的后端.up.railway.app`（Railway 上一步的域名，带 https） |
+
+4. 保存并 `Deploy`。Vercel 构建时把 `NEXT_PUBLIC_API_URL` 编译进前端，浏览器直接调 Railway 后端。
+5. 把 Vercel 分配的域名回填到 Railway 的 `CORS_ORIGIN`，否则浏览器跨域会被拦。
+
+### 自托管 / 其他平台
+
+- 任意支持 Docker 的平台可直接用本仓库 `docker-compose.yml`（`db` + `backend` 一起编排），或单独构建 `backend/Dockerfile`。
+- CI 见 `.github/workflows/ci.yml`：push 到 main 自动构建并跑测试；显式部署 job 默认关闭，配置 `RAILWAY_TOKEN` / `VERCEL_TOKEN` 仓库 Secrets 后改为 `if: true` 即可在 Actions 里自动部署。
 
 ## 技术栈
 

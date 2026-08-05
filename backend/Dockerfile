@@ -26,4 +26,5 @@ COPY --from=build /app/package.json ./package.json
 RUN npx prisma generate
 
 EXPOSE 3001
-CMD ["node", "dist/main"]
+# 启动前先应用迁移（幂等），再启动服务；Railway 把 PORT 注入为运行时环境变量
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
