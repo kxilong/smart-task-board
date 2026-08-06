@@ -11,23 +11,7 @@
 
 ## 一、环境准备阶段
 
-### 1. 服务器连不上 GitHub（HTTPS 443 超时 / HTTP/2 流中断）
-**现象**：在服务器上执行 `git push` / `git pull` 报
-```
-Failed to connect to github.com port 443 after 130043 ms: Connection timed out
-fatal: unable to access '...': HTTP/2 stream 1 was not closed cleanly before end of the underlying stream
-```
-**原因**：国内服务器访问 GitHub 走 HTTPS 不稳定，时好时坏。
-**解决**：
-- push 操作放在**本地 Mac** 完成（本地已配 SSH：`git@github.com:kxilong/smart-task-board.git`，稳定）。
-- 服务器只负责 `git pull`。网络抖动时多试几次，或临时改用 HTTP/1.1：
-  ```bash
-  git config --global http.version HTTP/1.1
-  git pull origin main
-  git config --global http.version HTTP/2
-  ```
-
-### 2. Docker Hub 镜像拉取超时
+### 1. Docker Hub 镜像拉取超时
 **现象**：`docker compose up` 卡在拉 postgres 镜像。
 **解决**：配置国内镜像加速器 `/etc/docker/daemon.json`，加入腾讯云 / 中科大 / 网易源，然后 `systemctl restart docker`。
 
@@ -41,7 +25,7 @@ RUN npm config set registry https://registry.npmmirror.com
 ```
 构建时间降至约 2 分钟。
 
-### 4. Prisma 报 Schema engine error（缺少 OpenSSL）
+### 2. Prisma 报 Schema engine error（缺少 OpenSSL）
 **现象**：后端容器启动后循环报错，Prisma 无法加载 query engine：
 ```
 PrismaClientInitializationError: Schema engine error ... libssl.so.1.1 / openssl not found
@@ -54,7 +38,7 @@ RUN npx prisma generate
 ```
 重新构建后 `npx prisma migrate deploy` 成功（`All migrations successfully applied`）。
 
-### 5. 前端构建失败：缺少 public 目录
+### 3. 前端构建失败：缺少 public 目录
 **现象**：`docker compose build web` 报 `Could not find the 'public' directory ...`
 **解决**：在 `web/` 下创建空的 `public` 目录后重新构建（创建目录本身即可，无需放文件）。
 
@@ -62,7 +46,7 @@ RUN npx prisma generate
 
 ## 二、运行时问题
 
-### 6. 后端只监听 localhost，容器外访问不到
+### 4. 后端只监听 localhost，容器外访问不到
 **现象**：后端容器 Up，但浏览器访问接口超时；日志显示 `Application is running on: http://localhost:3001`。
 **原因**：`backend/src/main.ts` 原代码 `app.listen(port)` 只绑定 127.0.0.1，容器外连不上。
 **解决**：改为监听所有网卡：
@@ -72,7 +56,7 @@ await app.listen(port, '0.0.0.0');
 ```
 > 注意：Docker 构建会走缓存，代码改后必须用 `docker compose up -d --build backend`（必要时 `--no-cache`）才会生效。
 
-### 7. 生产环境强制 HTTPS 重定向，导致 CORS 预检失败
+### 5. 生产环境强制 HTTPS 重定向，导致 CORS 预检失败
 **现象**：前端登录报错
 ```
 Access to fetch at 'http://124.223.192.177:3001/...' has been blocked by CORS policy:
@@ -94,7 +78,7 @@ if (forceHttps) {
 ```
 后续若上 HTTPS（如 Nginx + 证书），在 docker-compose 的 backend 环境变量里设 `FORCE_HTTPS: 'true'` 即可。
 
-### 8. 浏览器直连后端跨域失败（Provisional headers）
+### 6. 浏览器直连后端跨域失败（Provisional headers）
 **现象**：前端直连 `http://124.223.192.177:3001/auth/login`（跨域），Network 显示 "Provisional headers are shown"，请求发不出去。但服务器上 `curl -X OPTIONS` / `curl -X POST` 均正常返回 CORS 头（说明后端本身没问题）。
 **原因**：浏览器端对裸 IP + 非标准端口的跨域请求受安全策略影响，预检未真正通过。
 **解决**：前端不走直连，改为**同域代理**，由 Next.js 服务端反代后端，彻底规避浏览器 CORS：
