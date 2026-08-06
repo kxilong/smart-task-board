@@ -1,8 +1,8 @@
 import type { AuthResponse, Task, TaskStatus, User } from './types';
 
-// 默认通过 Next.js rewrite /api/backend/* → 后端（本地/预览避免跨域与 localhost 不可达问题）
-// 部署到 Vercel 时，设置 NEXT_PUBLIC_API_URL=https://your-backend.com 直连后端
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? '/api/backend';
+// 通过 Next.js rewrite /api/backend/* → 后端，避免浏览器端跨域与混合内容限制。
+// Next.js 服务端会在构建时把 /api/backend/* 代理到 NEXT_PUBLIC_API_URL 指向的后端。
+const BASE = '/api/backend';
 
 const ACCESS_KEY = 'stb_access';
 const REFRESH_KEY = 'stb_refresh';
