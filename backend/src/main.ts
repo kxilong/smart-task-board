@@ -24,7 +24,9 @@ async function bootstrap() {
 
   // 生产环境：非 HTTPS 请求一律 301 跳转到 HTTPS，并下发 HSTS，
   // 确保密码等敏感数据永不通过明文传输。
-  if (process.env.NODE_ENV === 'production') {
+  // 通过 FORCE_HTTPS 环境变量控制，默认关闭，方便未配置 HTTPS 的内网/测试环境。
+  const forceHttps = process.env.FORCE_HTTPS === 'true';
+  if (forceHttps) {
     app.use((req, res, next) => {
       if (req.headers['x-forwarded-proto'] !== 'https') {
         return res.redirect(301, `https://${req.headers.host}${req.url}`);
