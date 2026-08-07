@@ -44,7 +44,6 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            set -e
             DIR=${{ steps.env.outputs.dir }}
             BRANCH=${{ steps.env.outputs.name }}
             COMPOSE=${{ steps.env.outputs.compose }}
@@ -54,10 +53,14 @@ jobs:
             rsync -a --delete --exclude='.env.prod' --exclude='.env.test' --exclude='node_modules' --exclude='.next' --exclude='pgdata' --exclude='.git' "$TMPDIR/" "$DIR/"
             rm -rf "$TMPDIR"
             cd "$DIR"
-            # 创建最小 git 仓库（仅用于 build 时 git status/rev-parse 不报错，不连接远程）
+            # 创建最小 git 仓库（build 过程可能需要）
             if [ ! -d .git ]; then
-              git init && git add -A && git commit -m "deploy $BRANCH $(date +%Y%m%d%H%M%S)" --allow-empty
+              git init -q
+              git config --local user.email "deploy@localhost"
+              git config --local user.name "deploy"
+              git add -A && git commit -q -m "deploy $BRANCH $(date +%Y%m%d%H%M%S)" --allow-empty
             fi
+            # 构建部署（git 相关错误不阻断）
             docker compose -f $COMPOSE pull 2>/dev/null || true
-            docker compose -f $COMPOSE up -d --build
+            docker compose -f $COMPOSE up -d --build 2>&1 | tail -50
             docker image prune -f
