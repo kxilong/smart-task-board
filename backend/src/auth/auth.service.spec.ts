@@ -46,9 +46,9 @@ describe('AuthService', () => {
   });
 
   it('register 邮箱已存在 → 409', async () => {
-    userDelegate.findUnique.mockResolvedValue({ id: 'u1', email: 'a@b.com' });
+    userDelegate.findUnique.mockResolvedValue({ id: 'u1', email: 'a@b.com', username: 'testuser' });
     await expect(
-      service.register({ email: 'a@b.com', password: 'secret1' }),
+      service.register({ username: 'testuser', email: 'a@b.com', password: 'secret1' }),
     ).rejects.toThrow(ConflictException);
   });
 
@@ -56,12 +56,13 @@ describe('AuthService', () => {
     userDelegate.findUnique.mockResolvedValue(null);
     userDelegate.create.mockResolvedValue({
       id: 'u1',
+      username: 'testuser',
       email: 'a@b.com',
       name: null,
       createdAt: new Date(),
     });
     jwtMock.signAsync.mockResolvedValue('signed-token');
-    const res = await service.register({ email: 'a@b.com', password: 'secret1' });
+    const res = await service.register({ username: 'testuser', email: 'a@b.com', password: 'secret1' });
     expect(res.accessToken).toBe('signed-token');
     expect(res.refreshToken).toBe('signed-token');
     expect(res.user.email).toBe('a@b.com');
@@ -70,7 +71,7 @@ describe('AuthService', () => {
   it('login 邮箱或密码错误 → 401', async () => {
     userDelegate.findUnique.mockResolvedValue(null);
     await expect(
-      service.login({ email: 'a@b.com', password: 'wrong' }),
+      service.login({ username: 'testuser', password: 'wrong' }),
     ).rejects.toThrow(UnauthorizedException);
   });
 
