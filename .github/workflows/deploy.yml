@@ -29,11 +29,11 @@ jobs:
         run: |
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "name=prod" >> "$GITHUB_OUTPUT"
-            echo "dir=/opt/stb/prod" >> "$GITHUB_OUTPUT"
+            echo "dir=/opt/stb/prod/prod" >> "$GITHUB_OUTPUT"
             echo "compose=docker-compose.prod.yml" >> "$GITHUB_OUTPUT"
           else
             echo "name=test" >> "$GITHUB_OUTPUT"
-            echo "dir=/opt/stb/test" >> "$GITHUB_OUTPUT"
+            echo "dir=/opt/stb/test/test" >> "$GITHUB_OUTPUT"
             echo "compose=docker-compose.yml" >> "$GITHUB_OUTPUT"
           fi
 
