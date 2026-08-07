@@ -3,6 +3,7 @@ node_modules/
 
 # build output
 dist/
+dist.old/
 .next/
 out/
 
@@ -27,3 +28,9 @@ coverage/
 
 # prisma generated (regenerated on install)
 # backend 下通常保留 schema，不提交生成的 client
+
+# temp files
+commit-msg-tmp.txt
+crypto.service.ts
+crypto.service.ts.bak
+*.tmp
