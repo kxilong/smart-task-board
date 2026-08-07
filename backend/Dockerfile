@@ -5,7 +5,9 @@ FROM node:22-bookworm-slim AS build
 WORKDIR /app
 
 # 原生 bcrypt 需要从源码编译，预装编译工具链
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# 使用清华镜像源加速 apt（服务器直连 deb.debian.org 极慢）
+RUN sed -i 's|http://deb.debian.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update && apt-get install -y --no-install-recommends \
     python3 make g++ build-essential libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
