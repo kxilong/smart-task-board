@@ -47,20 +47,18 @@ jobs:
             DIR=${{ steps.env.outputs.dir }}
             BRANCH=${{ steps.env.outputs.name }}
             COMPOSE=${{ steps.env.outputs.compose }}
-            # 用 GitHub API 下载 tarball（无需镜像站、无需 SSH/HTTPS 认证）
+            # 用 Gitee 镜像下载 tarball（服务器无法访问 GitHub）
             TMPDIR=$(mktemp -d)
-            curl -sL "https://api.github.com/repos/kxilong/smart-task-board/tarball/$BRANCH" | tar xz --strip-components=1 -C "$TMPDIR"
+            curl -sL "https://gitee.com/wanglin_5/smart-task-board/repository/archive/$BRANCH.tar.gz" | tar xz --strip-components=1 -C "$TMPDIR"
             rsync -a --delete --exclude='.env.prod' --exclude='.env.test' --exclude='node_modules' --exclude='.next' --exclude='pgdata' --exclude='.git' "$TMPDIR/" "$DIR/"
             rm -rf "$TMPDIR"
             cd "$DIR"
-            # 创建最小 git 仓库（build 过程可能需要）
             if [ ! -d .git ]; then
               git init -q
               git config --local user.email "deploy@localhost"
               git config --local user.name "deploy"
               git add -A && git commit -q -m "deploy $BRANCH $(date +%Y%m%d%H%M%S)" --allow-empty
             fi
-            # 构建部署（git 相关错误不阻断）
             docker compose -f $COMPOSE pull 2>/dev/null || true
             docker compose -f $COMPOSE up -d --build 2>&1 | tail -50
             docker image prune -f
