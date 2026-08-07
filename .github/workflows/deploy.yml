@@ -54,6 +54,11 @@ jobs:
             rsync -a --delete --exclude='.env.prod' --exclude='.env.test' --exclude='node_modules' --exclude='.next' --exclude='pgdata' --exclude='.git' "$TMPDIR/" "$DIR/"
             rm -rf "$TMPDIR"
             cd "$DIR"
+            # 重新初始化 git（build 过程可能需要 git 版本信息）
+            if [ ! -d .git ]; then
+              git init && git remote add origin https://github.com/kxilong/smart-task-board.git
+              git fetch origin $BRANCH --depth=1 && git reset --hard origin/$BRANCH
+            fi
             docker compose -f $COMPOSE pull 2>/dev/null || true
             docker compose -f $COMPOSE up -d --build
             docker image prune -f
