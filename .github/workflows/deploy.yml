@@ -24,6 +24,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
       - name: 解析目标环境
         id: env
         run: |
@@ -54,13 +59,11 @@ jobs:
             echo "GITEE_TOKEN is not configured"
             exit 1
           fi
-          # 用 Gitee 镜像同步接口触发 pull from GitHub
-          curl --fail --silent --show-error \
-            --request POST \
-            --header "Content-Type: application/json" \
-            --data '{"access_token":"'"$GITEE_TOKEN"'"}' \
-            --output /dev/null \
-            "https://gitee.com/api/v5/repos/mderp/smart-task-board/mirror-sync"
+          # Push the exact GitHub commit to the Gitee mirror.
+          AUTH_HEADER=$(printf '%s' "mderp:$GITEE_TOKEN" | base64 --wrap=0)
+          git -c http.extraHeader="Authorization: Basic $AUTH_HEADER" \
+            push "https://gitee.com/mderp/smart-task-board.git" \
+            "$TARGET_SHA:refs/heads/$BRANCH"
 
           MIRROR_SHA=""
           for attempt in $(seq 1 12); do
