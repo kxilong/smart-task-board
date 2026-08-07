@@ -11,6 +11,9 @@
 - 2026-08-07：修正生产后端数据库容器内部端口为 `db:5432`。
 - 2026-08-07：在生产后端运行镜像中安装 OpenSSL，Prisma 迁移和 NestJS 启动均验证成功。
 - 2026-08-07：登录页新增环境标签，通过构建参数区分测试、正式和本地环境。
+- 2026-08-07：优化自动化部署流程：同分支部署并发取消、部署前后端/前端检查门禁、测试 `.env.test` 自动同步、生产 `.env.prod` 保留并校验。
+- 2026-08-07：新增后端 `/health` 数据库连通性健康接口，部署 HTTP 健康检查改为重试并要求前端 `/login` 与后端 `/health` 返回 `200`。
+- 2026-08-07：同步 Docker Compose 启动命令与部署文档，明确 GitHub Actions → Gitee tarball → SSH → Docker Compose 的双环境部署流程。
 
 ## 进行中
 
@@ -18,7 +21,7 @@
 
 ## 待办
 
-- 待确认：为 GitHub Actions 的 HTTP 健康检查增加启动重试。部署任务 `31166927987` 在后端容器刚创建时显示失败，但部署后的容器和公网访问验证均正常。
+- 无。
 
 ## 阻塞
 
@@ -31,3 +34,4 @@
 - 2026-08-07：生产 `db`、`backend`、`web` 三个容器均为运行状态，PostgreSQL 健康检查通过。
 - 2026-08-07：后端日志确认两条 Prisma 迁移成功应用，NestJS 成功启动。
 - 2026-08-07：前端 6 个测试通过，Next.js 生产构建通过，本地预览登录页返回 `200` 并显示「测试环境」。
+- 2026-08-07：本地验证通过：后端 `npm run build`、后端 11 个单测、前端 `npm run lint`、前端 6 个单测、前端 `npm run build`、workflow YAML 解析、测试环境 `docker compose --env-file web/.env.test -f docker-compose.yml config --quiet`。

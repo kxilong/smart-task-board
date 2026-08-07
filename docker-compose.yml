@@ -1,5 +1,5 @@
 # 测试环境（test 分支）
-# 启动：docker compose up -d --build
+# 启动：docker compose --env-file web/.env.test up -d --build
 # 后端 http://localhost:3001 | 前端 http://localhost:3000
 # 数据库 smart_task_board_test，与生产的 smart_task_board 完全隔离。
 services:
@@ -34,6 +34,7 @@ services:
       - '3001:3001'
 
   web:
+    env_file: ./web/.env.test
     build:
       context: ./web
       args:

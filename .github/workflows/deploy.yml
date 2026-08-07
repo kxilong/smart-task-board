@@ -8,6 +8,7 @@ name: Deploy · 智能任务板
 #   SERVER_HOST   服务器 IP，如 124.223.192.177
 #   SERVER_USER   SSH 登录用户名
 #   SSH_PRIVATE_KEY  登录服务器的私钥（对应服务器 ~/.ssh/authorized_keys 中的公钥）
+#   GITEE_TOKEN   推送 Gitee 镜像仓库的 token
 #
 # Server deployment directories:
 #   test: /opt/stb/test/test
@@ -20,8 +21,47 @@ on:
   push:
     branches: [main, test]
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  backend-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run build
+      - run: npm test
+
+  web-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
   deploy:
+    needs: [backend-check, web-check]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -117,52 +157,99 @@ jobs:
               exit 1
             fi
 
-            if [ "$BRANCH" = "main" ] && [ ! -f "$DIR/backend/.env.prod" ]; then
-              echo "Production config backend/.env.prod is missing"
-              exit 1
+            if [ "$BRANCH" = "main" ]; then
+              for REQUIRED_CONFIG in "$DIR/backend/.env.prod" "$DIR/web/.env.prod"; do
+                if [ ! -f "$REQUIRED_CONFIG" ]; then
+                  echo "Production config $REQUIRED_CONFIG is missing"
+                  exit 1
+                fi
+              done
             fi
 
             rsync -a --delete \
               --exclude='.env.prod' \
-              --exclude='.env.test' \
               --exclude='node_modules' \
               --exclude='.next' \
               --exclude='pgdata' \
               --exclude='.git' \
               "$SOURCE_DIR/" "$DIR/"
             cd "$DIR"
-            docker compose -f "$COMPOSE" config --quiet
 
-            if docker compose -f "$COMPOSE" up -d --build >"$DEPLOY_LOG" 2>&1; then
+            if [ "$BRANCH" = "main" ]; then
+              BACKEND_ENV_FILE="./backend/.env.prod"
+              WEB_ENV_FILE="./web/.env.prod"
+            else
+              BACKEND_ENV_FILE="./backend/.env.test"
+              WEB_ENV_FILE="./web/.env.test"
+            fi
+            for REQUIRED_CONFIG in "$BACKEND_ENV_FILE" "$WEB_ENV_FILE"; do
+              if [ ! -f "$REQUIRED_CONFIG" ]; then
+                echo "Config $REQUIRED_CONFIG is missing"
+                exit 1
+              fi
+            done
+
+            compose() {
+              docker compose --env-file "$WEB_ENV_FILE" -f "$COMPOSE" "$@"
+            }
+
+            compose config --quiet
+
+            if compose up -d --build >"$DEPLOY_LOG" 2>&1; then
               tail -50 "$DEPLOY_LOG"
             else
               tail -100 "$DEPLOY_LOG"
               exit 1
             fi
 
-            EXPECTED_SERVICES=$(docker compose -f "$COMPOSE" config --services | wc -l | tr -d ' ')
+            EXPECTED_SERVICES=$(compose config --services | wc -l | tr -d ' ')
             RUNNING_SERVICES=0
             for attempt in $(seq 1 12); do
-              RUNNING_SERVICES=$(docker compose -f "$COMPOSE" ps --services --status running | wc -l | tr -d ' ')
+              RUNNING_SERVICES=$(compose ps --services --status running | wc -l | tr -d ' ')
               if [ "$RUNNING_SERVICES" -eq "$EXPECTED_SERVICES" ]; then
                 break
               fi
               sleep 5
             done
 
-            docker compose -f "$COMPOSE" ps
+            compose ps
             if [ "$RUNNING_SERVICES" -ne "$EXPECTED_SERVICES" ]; then
-              docker compose -f "$COMPOSE" logs --tail=100
+              compose logs --tail=100
               echo "Container health check failed: $RUNNING_SERVICES/$EXPECTED_SERVICES running"
               exit 1
             fi
 
-            WEB_STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' \
-              --max-time 10 "http://127.0.0.1:$WEB_PORT/login" || true)
-            BACKEND_STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' \
-              --max-time 10 "http://127.0.0.1:$BACKEND_PORT/" || true)
-            if [ "$WEB_STATUS" = "000" ] || [ "$BACKEND_STATUS" = "000" ]; then
-              echo "HTTP health check failed: web=$WEB_STATUS backend=$BACKEND_STATUS"
+            http_status_with_retry() {
+              EXPECTED_STATUS="$1"
+              URL="$2"
+              HEADER="${3:-}"
+              STATUS="000"
+              for attempt in $(seq 1 12); do
+                if [ -n "$HEADER" ]; then
+                  STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+                    --max-time 10 --header "$HEADER" "$URL" || true)
+                else
+                  STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+                    --max-time 10 "$URL" || true)
+                fi
+                if [ "$STATUS" = "$EXPECTED_STATUS" ]; then
+                  printf '%s' "$STATUS"
+                  return 0
+                fi
+                sleep 5
+              done
+              printf '%s' "$STATUS"
+              return 1
+            }
+
+            if ! WEB_STATUS=$(http_status_with_retry "200" "http://127.0.0.1:$WEB_PORT/login"); then
+              echo "Web health check failed: expected=200 actual=$WEB_STATUS"
+              compose logs --tail=100 web
+              exit 1
+            fi
+            if ! BACKEND_STATUS=$(http_status_with_retry "200" "http://127.0.0.1:$BACKEND_PORT/health" "x-forwarded-proto: https"); then
+              echo "Backend health check failed: expected=200 actual=$BACKEND_STATUS"
+              compose logs --tail=100 backend
               exit 1
             fi
             echo "Deployment complete: commit=$TARGET_SHA web=$WEB_STATUS backend=$BACKEND_STATUS"

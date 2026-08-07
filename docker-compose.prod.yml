@@ -1,9 +1,8 @@
 # 生产环境（main 分支）
-# 启动：docker compose -f docker-compose.prod.yml --env-file backend/.env.prod up -d --build
+# 启动：docker compose --env-file web/.env.prod -f docker-compose.prod.yml up -d --build
 # 后端 http://localhost:3101 | 前端 http://localhost:3100
 # 数据库 smart_task_board，与测试的 smart_task_board_test 完全隔离。
-# 注意：宿主机端口（3101/5433/3100）与测试环境（3001/5432/3000）错开，
-#       但容器内端口保持一致（3001/5432/3000），由容器网络隔离。
+# 注意：生产只暴露前端 3100 与后端 3101，数据库仅在容器网络内部访问。
 services:
   db:
     image: postgres:16-alpine
@@ -35,6 +34,7 @@ services:
       - '3101:3101'
 
   web:
+    env_file: ./web/.env.prod
     build:
       context: ./web
       args:
