@@ -37,3 +37,6 @@ commit-msg-tmp.txt
 crypto.service.ts
 crypto.service.ts.bak
 *.tmp
+
+# ssh keys (secrets!)
+.ssh-deploy/
