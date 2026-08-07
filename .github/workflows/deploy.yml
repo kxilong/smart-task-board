@@ -48,10 +48,10 @@ jobs:
             DIR=${{ steps.env.outputs.dir }}
             BRANCH=${{ steps.env.outputs.name }}
             COMPOSE=${{ steps.env.outputs.compose }}
-            # 用 ghproxy 镜像站浅克隆覆盖更新（避免 SSH/HTTPS 认证问题）
+            # 用 GitHub API 下载 tarball（无需镜像站、无需 SSH/HTTPS 认证）
             TMPDIR=$(mktemp -d)
-            git clone --depth=1 --branch $BRANCH https://ghproxy.com/https://github.com/kxilong/smart-task-board.git "$TMPDIR"
-            rsync -a --delete --exclude='.env.prod' --exclude='node_modules' --exclude='.next' --exclude='pgdata' "$TMPDIR/" "$DIR/"
+            curl -sL "https://api.github.com/repos/kxilong/smart-task-board/tarball/$BRANCH" | tar xz --strip-components=1 -C "$TMPDIR"
+            rsync -a --delete --exclude='.env.prod' --exclude='.env.test' --exclude='node_modules' --exclude='.next' --exclude='pgdata' --exclude='.git' "$TMPDIR/" "$DIR/"
             rm -rf "$TMPDIR"
             cd "$DIR"
             docker compose -f $COMPOSE pull 2>/dev/null || true
