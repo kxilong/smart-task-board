@@ -1,15 +1,8 @@
 # ---- 构建阶段 ----
-# 用 Debian 系 slim 镜像：Prisma 的 schema/query engine 依赖 libssl，
-# Alpine 上易因 openssl 版本检测失败导致 migrate deploy 崩溃，bookworm-slim 自带可正常加载。
-FROM node:22-bookworm-slim AS build
+# 用完整版 node:22-bookworm（自带 gcc/python 编译链）避免 apt 安装，
+# 因为服务器无法访问 Debian 镜像源。Prisma 依赖 libssl 在 bookworm 自带。
+FROM node:22-bookworm AS build
 WORKDIR /app
-
-# 原生 bcrypt 需要从源码编译，预装编译工具链
-# 使用清华镜像源加速 apt（服务器直连 deb.debian.org 极慢）
-RUN sed -i 's|http://deb.debian.org|https://mirrors.tuna.tsinghua.edu.cn|g' /etc/apt/sources.list.d/debian.sources \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    python3 make g++ build-essential libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
 
 # 先装依赖（利用层缓存）
 COPY package*.json ./
