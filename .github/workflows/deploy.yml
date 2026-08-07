@@ -1,0 +1,52 @@
+name: Deploy · 智能任务板
+
+# 自动化部署：
+#   push 到 test 分支 → 部署到服务器【测试环境】（docker-compose.yml，端口 3000/3001）
+#   push 到 main 分支 → 部署到服务器【生产环境】（docker-compose.prod.yml，端口 3100/3101）
+#
+# 前置条件（仓库 Settings → Secrets and variables → Actions）：
+#   SERVER_HOST   服务器 IP，如 124.223.192.177
+#   SERVER_USER   SSH 登录用户名
+#   SSH_PRIVATE_KEY  登录服务器的私钥（对应服务器 ~/.ssh/authorized_keys 中的公钥）
+#
+# 服务器目录约定（需提前手动创建并 checkout 对应分支）：
+#   测试：/opt/stb/test    （git checkout test）
+#   生产：/opt/stb/prod    （git checkout main）
+#
+# 注意：backend/.env.prod 与 web/.env.prod 不进 git，需提前手动放到生产目录；
+#       测试环境用已提交的 .env.test，无需额外配置。
+
+on:
+  push:
+    branches: [main, test]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 解析目标环境
+        id: env
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            echo "name=prod" >> "$GITHUB_OUTPUT"
+            echo "dir=/opt/stb/prod" >> "$GITHUB_OUTPUT"
+            echo "compose=docker-compose.prod.yml" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=test" >> "$GITHUB_OUTPUT"
+            echo "dir=/opt/stb/test" >> "$GITHUB_OUTPUT"
+            echo "compose=docker-compose.yml" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: SSH 部署
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            cd ${{ steps.env.outputs.dir }}
+            git pull --ff-only
+            docker compose -f ${{ steps.env.outputs.compose }} pull
+            docker compose -f ${{ steps.env.outputs.compose }} up -d --build
+            docker image prune -f

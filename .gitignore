@@ -13,6 +13,9 @@ out/
 .env.*.local
 !.env.example
 !.env.local.example
+# 生产环境真实配置（含强密钥），不提交；模板为 .env.test / .env.prod
+backend/.env.prod
+web/.env.prod
 
 # logs
 *.log

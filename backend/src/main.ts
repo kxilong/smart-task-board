@@ -25,7 +25,9 @@ async function bootstrap() {
   // 生产环境：非 HTTPS 请求一律 301 跳转到 HTTPS，并下发 HSTS，
   // 确保密码等敏感数据永不通过明文传输。
   // 通过 FORCE_HTTPS 环境变量控制，默认关闭，方便未配置 HTTPS 的内网/测试环境。
-  const forceHttps = process.env.FORCE_HTTPS === 'true';
+  // NODE_ENV=production 时默认开启（可由 FORCE_HTTPS 显式覆盖）。
+  const isProd = process.env.NODE_ENV === 'production';
+  const forceHttps = process.env.FORCE_HTTPS === 'true' || (isProd && process.env.FORCE_HTTPS !== 'false');
   if (forceHttps) {
     app.use((req, res, next) => {
       if (req.headers['x-forwarded-proto'] !== 'https') {
@@ -42,9 +44,10 @@ async function bootstrap() {
   // 统一异常格式：避免把堆栈泄露给前端，返回 { statusCode, message, error }
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  // CORS：阶段一先放开，便于本地 Vercel 前端联调；生产应改为指定域名白名单
+  // CORS：测试环境放开便于联调；生产必须指定域名白名单，不允许留空全开。
+  const allowedOrigins = process.env.CORS_ORIGIN?.split(',').filter(Boolean);
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',').filter(Boolean) ?? true,
+    origin: isProd ? (allowedOrigins ?? false) : (allowedOrigins ?? true),
     credentials: true,
   });
 

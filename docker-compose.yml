@@ -1,6 +1,7 @@
-# 本地一键起：Postgres + 后端
-# 用法：在仓库根目录执行 `docker compose up --build`
-# 生产部署（Railway / Render）不需要这个文件，平台会单独起 Postgres 并注入 DATABASE_URL。
+# 测试环境（test 分支）
+# 启动：docker compose up -d --build
+# 后端 http://localhost:3001 | 前端 http://localhost:3000
+# 数据库 smart_task_board_test，与生产的 smart_task_board 完全隔离。
 services:
   db:
     image: postgres:16-alpine
@@ -8,11 +9,11 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: smart_task_board
+      POSTGRES_DB: smart_task_board_test
     ports:
       - '5432:5432'
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_test:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
@@ -22,19 +23,29 @@ services:
   backend:
     build: ./backend
     restart: unless-stopped
+    env_file: ./backend/.env.test
+    environment:
+      NODE_ENV: development
+      PORT: 3001
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/smart_task_board?schema=public
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-dev-access-secret-change-me}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-me}
-      JWT_ACCESS_EXPIRES_IN: 15m
-      JWT_REFRESH_EXPIRES_IN: 7d
-      PORT: 3001
-      CORS_ORIGIN: ${CORS_ORIGIN:-}
     ports:
       - '3001:3001'
 
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://124.223.192.177:3001}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+    depends_on:
+      - backend
+    ports:
+      - '3000:3000'
+
 volumes:
-  pgdata:
+  pgdata_test:

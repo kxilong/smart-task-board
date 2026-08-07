@@ -1,0 +1,52 @@
+# 生产环境（main 分支）
+# 启动：docker compose -f docker-compose.prod.yml --env-file backend/.env.prod up -d --build
+# 后端 http://localhost:3101 | 前端 http://localhost:3100
+# 数据库 smart_task_board，与测试的 smart_task_board_test 完全隔离。
+# 注意：宿主机端口（3101/5433/3100）与测试环境（3001/5432/3000）错开，
+#       但容器内端口保持一致（3001/5432/3000），由容器网络隔离。
+services:
+  db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smart_task_board
+    # 生产不把 5432 暴露给公网，仅在 compose 网络内部供 backend 访问
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: always
+    env_file: ./backend/.env.prod
+    environment:
+      NODE_ENV: production
+      PORT: 3101
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3101:3101'
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://124.223.192.177:3101}
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3100
+    depends_on:
+      - backend
+    ports:
+      - '3100:3100'
+
+volumes:
+  pgdata:
