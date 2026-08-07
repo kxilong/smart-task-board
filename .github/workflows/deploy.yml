@@ -45,6 +45,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
+            ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
             cd ${{ steps.env.outputs.dir }}
             git pull --ff-only
             docker compose -f ${{ steps.env.outputs.compose }} pull
