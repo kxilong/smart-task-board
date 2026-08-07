@@ -1,5 +1,5 @@
 # 前端 Dockerfile（Next.js standalone 模式）
-# 测试/生产共用此文件，差异由 NEXT_PUBLIC_API_URL 注入。
+# 测试/生产共用此文件，差异由 NEXT_PUBLIC_* 构建参数注入。
 
 # ---- 依赖安装阶段 ----
 FROM node:22-bookworm-slim AS deps
@@ -15,6 +15,8 @@ COPY . .
 # NEXT_PUBLIC_* 在构建时内联，必须通过 build arg 注入
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_APP_ENV
+ENV NEXT_PUBLIC_APP_ENV=$NEXT_PUBLIC_APP_ENV
 RUN npm run build
 
 # ---- 运行阶段 ----

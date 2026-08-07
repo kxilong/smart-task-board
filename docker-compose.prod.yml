@@ -38,6 +38,7 @@ services:
     build:
       context: ./web
       args:
+        NEXT_PUBLIC_APP_ENV: production
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://124.223.192.177:3101}
     restart: always
     environment:

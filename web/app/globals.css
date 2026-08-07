@@ -44,6 +44,39 @@ body {
   margin-bottom: 16px;
 }
 
+.login-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.login-heading h2 {
+  margin: 0;
+}
+.environment-tag {
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+.environment-tag--production {
+  color: #9f1239;
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+.environment-tag--test {
+  color: #854d0e;
+  background: #fefce8;
+  border-color: #fde68a;
+}
+.environment-tag--local {
+  color: #374151;
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
 .form {
   display: flex;
   flex-direction: column;
