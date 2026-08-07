@@ -37,6 +37,22 @@ jobs:
             echo "compose=docker-compose.yml" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: 同步代码到 Gitee（供服务器拉取）
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+        run: |
+          BRANCH=${{ steps.env.outputs.name }}
+          curl -X PUT "https://gitee.com/api/v5/repos/wanglin_5/smart-task-board" \
+            -H "Content-Type: application/json" \
+            -d '{"access_token":"'$GITEE_TOKEN'", "owner":"wanglin_5", "repo":"smart-task-board"}' \
+            -s -o /dev/null || true
+          # 用 Gitee 镜像同步接口触发 pull from GitHub
+          curl -X POST "https://gitee.com/api/v5/repos/wanglin_5/smart-task-board/mirror-sync" \
+            -H "Content-Type: application/json" \
+            -d '{"access_token":"'$GITEE_TOKEN'"}' \
+            -s -o /dev/null || true
+          sleep 15  # 等待 Gitee 同步完成
+
       - name: SSH 部署
         uses: appleboy/ssh-action@v1.0.3
         with:
