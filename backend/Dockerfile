@@ -18,6 +18,10 @@ FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
+
 # 复制已安装依赖、构建产物、prisma schema
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
