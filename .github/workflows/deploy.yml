@@ -54,10 +54,9 @@ jobs:
             rsync -a --delete --exclude='.env.prod' --exclude='.env.test' --exclude='node_modules' --exclude='.next' --exclude='pgdata' --exclude='.git' "$TMPDIR/" "$DIR/"
             rm -rf "$TMPDIR"
             cd "$DIR"
-            # 重新初始化 git（build 过程可能需要 git 版本信息）
+            # 创建最小 git 仓库（仅用于 build 时 git status/rev-parse 不报错，不连接远程）
             if [ ! -d .git ]; then
-              git init && git remote add origin https://github.com/kxilong/smart-task-board.git
-              git fetch origin $BRANCH --depth=1 && git reset --hard origin/$BRANCH
+              git init && git add -A && git commit -m "deploy $BRANCH $(date +%Y%m%d%H%M%S)" --allow-empty
             fi
             docker compose -f $COMPOSE pull 2>/dev/null || true
             docker compose -f $COMPOSE up -d --build
