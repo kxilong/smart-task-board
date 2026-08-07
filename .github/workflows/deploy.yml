@@ -42,12 +42,12 @@ jobs:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: |
           BRANCH=${{ steps.env.outputs.name }}
-          curl -X PUT "https://gitee.com/api/v5/repos/wanglin_5/smart-task-board" \
+          curl -X PUT "https://gitee.com/api/v5/repos/mderp/smart-task-board" \
             -H "Content-Type: application/json" \
-            -d '{"access_token":"'$GITEE_TOKEN'", "owner":"wanglin_5", "repo":"smart-task-board"}' \
+            -d '{"access_token":"'$GITEE_TOKEN'", "owner":"mderp", "repo":"smart-task-board"}' \
             -s -o /dev/null || true
           # 用 Gitee 镜像同步接口触发 pull from GitHub
-          curl -X POST "https://gitee.com/api/v5/repos/wanglin_5/smart-task-board/mirror-sync" \
+          curl -X POST "https://gitee.com/api/v5/repos/mderp/smart-task-board/mirror-sync" \
             -H "Content-Type: application/json" \
             -d '{"access_token":"'$GITEE_TOKEN'"}' \
             -s -o /dev/null || true
@@ -65,7 +65,7 @@ jobs:
             COMPOSE=${{ steps.env.outputs.compose }}
             # 用 Gitee 镜像下载 tarball（服务器无法访问 GitHub）
             TMPDIR=$(mktemp -d)
-            curl -sL "https://gitee.com/wanglin_5/smart-task-board/repository/archive/$BRANCH.tar.gz" | tar xz --strip-components=1 -C "$TMPDIR"
+            curl -sL "https://gitee.com/mderp/smart-task-board/repository/archive/$BRANCH.tar.gz" | tar xz --strip-components=1 -C "$TMPDIR"
             rsync -a --delete --exclude='.env.prod' --exclude='.env.test' --exclude='node_modules' --exclude='.next' --exclude='pgdata' --exclude='.git' "$TMPDIR/" "$DIR/"
             rm -rf "$TMPDIR"
             cd "$DIR"
